@@ -1,6 +1,9 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Zap, Sword, Trophy } from "lucide-react"
+import Link from "next/link"
 
 export default function Dashboard() {
   return (
@@ -10,10 +13,15 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold tracking-tight text-primary glow-text">Welcome to the Arena</h1>
           <p className="text-lg text-muted-foreground">Choose your battles. Trade to victory.</p>
         </div>
-        <Button size="lg" className="cyber-button gap-2 h-12 tracking-wider">
-          <Zap className="h-5 w-5" />
-          Enter Battle
-        </Button>
+        <Link href="/wars">
+          <Button 
+            size="lg" 
+            className="cyber-button gap-2 h-12 tracking-wider"
+          >
+            <Zap className="h-5 w-5" />
+            Enter Battle
+          </Button>
+        </Link>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
