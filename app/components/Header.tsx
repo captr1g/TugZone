@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 
 export default function Header() {
   return (
-    <header className="border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="border-b border-border/50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-md z-10">
       <div className="flex h-16 items-center px-6 cyber-gradient">
         <div className="relative flex flex-1 items-center gap-x-4">
           <div className="relative w-full max-w-md">
