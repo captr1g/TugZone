@@ -15,7 +15,7 @@ const pressStart2P = Press_Start_2P({
 export const metadata = {
   title: "TugZone | Underground Token Battles",
   description: "Enter the arena of competitive token trading",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -26,11 +26,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.className} ${pressStart2P.variable}`}>
       <body className="min-h-screen">
-        <div className="flex min-h-screen bg-background text-foreground">
+        <div className="flex min-h-screen">
           <Sidebar />
           <div className="flex flex-col flex-1">
             <Header />
-            <main className="flex-1 p-6 smoke-overlay">{children}</main>
+            <main className="flex-1 p-6">{children}</main>
           </div>
         </div>
       </body>
