@@ -45,10 +45,12 @@ export default function WarsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight text-primary glow-text">Active Token Wars</h1>
-        <Button className="cyber-button">
-          <Zap className="mr-2 h-4 w-4" />
-          Create New War
-        </Button>
+        <Link href={`/create`}>
+          <Button className="cyber-button">
+            <Zap className="mr-2 h-4 w-4" />
+            Create New Token
+          </Button>
+        </Link>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

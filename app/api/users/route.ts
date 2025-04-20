@@ -23,8 +23,8 @@ export async function GET(req: Request) {
         }
 
         // Otherwise, return all users
-        // const users = await User.find({}, { passwordHash: 0 });
-        // return success(users);
+        const users = await User.find({}, { passwordHash: 0 });
+        return success(users);
     } catch (err) {
         return failure(err);
     }

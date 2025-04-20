@@ -3,8 +3,11 @@
 import { Bell, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useWallet } from "@/hooks/walletContext"
 
 export default function Header() {
+  const { address, connectWallet } = useWallet();
+
   return (
     <header className="border-b border-border/50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-md z-10">
       <div className="flex h-16 items-center px-6 cyber-gradient">
@@ -25,11 +28,18 @@ export default function Header() {
               3
             </span>
           </Button>
-          <Button variant="outline" className="border-primary/20 hover:border-primary/40">
-            Connect Wallet
+
+          <Button
+            variant="outline"
+            className="border-primary/20 hover:border-primary/40"
+            onClick={connectWallet}
+          >
+            {address
+              ? `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`
+              : `Connect Wallet`}
           </Button>
         </div>
       </div>
     </header>
-  )
+  );
 }
