@@ -61,10 +61,11 @@ contract adddress : "0xA541a5a652D7CA0bFD45Df5c1352c3983E3D7bF7"
 workflow
 econinomy model
 
-tug-zone/
+```tug-zone/
 ├── app/              # Next.js app directory
 ├── components/       # React components
 ├── lib/             # Utility functions 
 ├── prisma/          # Database schema 
 ├── public/          # Static assets
 └── styles/          # Global styles
+```
