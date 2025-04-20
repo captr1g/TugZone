@@ -11,7 +11,7 @@ TugZone is a full-stack web application built with Next.js, featuring a modern U
 - **Frontend**: Next.js 15.2, React 18, TypeScript
 - **Styling**: Tailwind CSS, Radix UI Components
 - **Backend**: Next.js API Routes
-- **Database**: PostgreSQL with Prisma ORM
+- **Database**: MongoDB with ORM
 - **Authentication**: (To be implemented)
 
 ## Features
