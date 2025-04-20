@@ -1,5 +1,8 @@
 TugZone is a gamified token launchpad where two tokens battle for liquidity in time-based "Wars." Users pick a side, buy tokens, and the one with the highest sales wins. No selling during the war — only strategy, hype, and pure token warfare. After the war, the winning token hits the DEX.
 
+![TugZone Graph](./images/graph.png)
+
+
 Launch your token. Join the fight.
 Two tokens. One winner. Welcome to TugZone.
 # TugZone - Modern Web Application
