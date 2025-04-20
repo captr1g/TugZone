@@ -1,3 +1,7 @@
+TugZone is a gamified token launchpad where two tokens battle for liquidity in time-based "Wars." Users pick a side, buy tokens, and the one with the highest sales wins. No selling during the war — only strategy, hype, and pure token warfare. After the war, the winning token hits the DEX.
+
+Launch your token. Join the fight.
+Two tokens. One winner. Welcome to TugZone.
 # TugZone - Modern Web Application
 
 TugZone is a full-stack web application built with Next.js, featuring a modern UI and robust backend integration.
@@ -14,7 +18,7 @@ TugZone is a full-stack web application built with Next.js, featuring a modern U
 
 ### Core Features
 - 🎨 Modern and responsive UI using Radix UI components
-- 🌓 Dark/Light mode support
+- 🌓 Dark/Light mode support (in pipline)
 - 🔄 Real-time data updates
 - 📱 Mobile-first design
 - 🔒 Type-safe development with TypeScript
@@ -29,7 +33,7 @@ TugZone is a full-stack web application built with Next.js, featuring a modern U
 
 ### Backend Features
 - RESTful API endpoints
-- Database integration with Prisma
+- Database integration with Mongoose
 - Secure data handling
 - Type-safe database queries
 - Efficient data caching
@@ -46,6 +50,10 @@ checkout the repository
 git clone <sitory
 git clone <https://github.com/captr1g/TugZone_SC.git>
 cd tug-zone
+read the README.md file for more information
+```
+workflow
+econinomy model
 
 tug-zone/
 ├── app/              # Next.js app directory
