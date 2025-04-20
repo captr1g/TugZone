@@ -64,7 +64,7 @@ econinomy model
 tug-zone/
 ├── app/              # Next.js app directory
 ├── components/       # React components
-├── lib/             # Utility functions and shared logic
-├── prisma/          # Database schema and migrations
+├── lib/             # Utility functions 
+├── prisma/          # Database schema 
 ├── public/          # Static assets
 └── styles/          # Global styles
