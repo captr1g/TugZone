@@ -54,6 +54,9 @@ git clone <sitory
 git clone <https://github.com/captr1g/TugZone_SC.git>
 cd tug-zone
 read the README.md file for more information
+contract adddress : "0xA541a5a652D7CA0bFD45Df5c1352c3983E3D7bF7"
+[varified contract address link](https://sepolia.arbiscan.io/address/0xA541a5a652D7CA0bFD45Df5c1352c3983E3D7bF7#code)
+
 ```
 workflow
 econinomy model
