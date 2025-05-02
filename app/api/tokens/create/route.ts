@@ -3,7 +3,7 @@ import TokenModel from '@/lib/models/Token';
 import PoolModel from '@/lib/models/Pool';
 import { success, failure } from '@/utils/response';
 
-import { ethers } from 'ethers';
+import { ethers, formatEther } from 'ethers';
 import FactoryAbi from '@/abis/TokenFactory.json';
 import TokenAbi from '@/abis/PumpToken.json';
 import PoolAbi from '@/abis/PumpPool.json';
@@ -61,9 +61,20 @@ export async function POST(req: Request) {
         if (!tx) {
             failure('No transaction hash found', 404);
         }
-        const initialEth = Number(ethers.formatEther(tx?.value));
-        const block = await provider.getBlock(receipt.blockNumber);
 
+        if (tx?.value === undefined) {
+            return failure("Transaction has no value to format", 400);
+        }
+        const initialEth = Number(formatEther(tx.value));
+
+        const block = await provider.getBlock(receipt.blockNumber);
+        if (!block) {
+            failure('Block not found', 404);
+        }
+
+        if (block?.timestamp === undefined) {
+            return failure('Block timestamp not found', 400);
+        }
 
         const tokenDoc = await TokenModel.create([{
             tokenAddress: tokenAddr,
@@ -72,7 +83,7 @@ export async function POST(req: Request) {
             symbol,
             totalSupply,
             creatorAddress: creator,
-            launchData: new Date(block?.timestamp * 1000),
+            launchData: new Date(block.timestamp * 1000),
             initialBuyAmount: initialEth,
         }], { session });
 
@@ -81,7 +92,7 @@ export async function POST(req: Request) {
             poolAddress: poolAddr,
             tokenAddress: tokenAddr,
             creator: creator,
-            launchDate: new Date(block?.timestamp * 1000),
+            launchDate: new Date(block.timestamp * 1000),
             tradingPaused,
             sellingEnabled,
         }], { session })
