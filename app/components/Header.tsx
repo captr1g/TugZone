@@ -1,12 +1,24 @@
-"use client"
+"use client";
 
-import { Bell, Search } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useWallet } from "@/hooks/walletContext"
+import { Bell, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { ConnectKitButton } from "connectkit";
 
 export default function Header() {
-  const { address, connectWallet } = useWallet();
+  // const { address } = useAccount();
+  const { connect, connectors, isPending } = useConnect();
+  const { disconnect } = useDisconnect();
+
+  // // pick the first available connector (MetaMask/injected, WalletConnect, etc.)
+  // const handleClick = () => {
+  //   if (address) {
+  //     disconnect();                         // already connected → let user disconnect
+  //   } else {
+  //     connect({ connector: connectors[0] }); // not connected → open wallet
+  //   }
+  // };
 
   return (
     <header className="border-b border-border/50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-md z-10">
@@ -21,6 +33,7 @@ export default function Header() {
             />
           </div>
         </div>
+
         <div className="flex items-center gap-x-4">
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
@@ -29,15 +42,17 @@ export default function Header() {
             </span>
           </Button>
 
-          <Button
+          {/* <Button
             variant="outline"
             className="border-primary/20 hover:border-primary/40"
-            onClick={connectWallet}
+            disabled={isPending}
+            onClick={handleClick}
           >
             {address
               ? `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`
-              : `Connect Wallet`}
-          </Button>
+              : "Connect Wallet"}
+          </Button> */}
+          <ConnectKitButton />
         </div>
       </div>
     </header>

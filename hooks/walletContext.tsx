@@ -53,7 +53,6 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-
     // useEffect(() => {
     //     // Auto-connect if already connected
     //     if ((window as any).ethereum) {
