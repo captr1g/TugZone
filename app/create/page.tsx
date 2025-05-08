@@ -14,7 +14,9 @@ import FactoryAbi from '@/abis/TokenFactory.json'
 import TokenAbi from '@/abis/PumpToken.json'
 import PoolAbi from '@/abis/PumpPool.json'
 
-const FACTORY = '0xA541a5a652D7CA0bFD45Df5c1352c3983E3D7bF7' as const
+const FACTORY = '0xEbCbB6FFA5cfeE323ddD57Cf05e13391aFaF24F1' as const
+// const PUMPPOOL = '0x28Fe0b07410d9Aee3A94B4C72fBDaBdF15dea416' as const
+// const PUMPTOKEN = '0x6a656A0C6E7B0845a53B2c350e838828daf64DBe' as const
 
 export default function CreateTokenForm() {
     /* ────────────────────────── ui state ───────────────────────── */
@@ -70,53 +72,6 @@ export default function CreateTokenForm() {
         }
     }, [receipt])
 
-    /* 4️⃣ once both addresses are known → approve & initialise pool */
-    useEffect(() => {
-        if (!tokenAddr || !poolAddr || !walletClient) return
-
-        (async () => {
-            try {
-                /* approve pool for full supply */
-                const totalSupply = await publicClient?.readContract({
-                    address: tokenAddr,
-                    abi: TokenAbi,
-                    functionName: 'totalSupply',
-                }) as bigint
-
-                const approveHash = await writeContractAsync({
-                    address: tokenAddr,
-                    abi: TokenAbi,
-                    functionName: 'approve',
-                    args: [poolAddr, totalSupply],
-                })
-                await publicClient?.waitForTransactionReceipt({ hash: approveHash })
-
-                /* initialise pool with ETH liquidity */
-                const initHash = await writeContractAsync({
-                    address: poolAddr,
-                    abi: PoolAbi,
-                    functionName: 'initialize',
-                    args: [tokenAddr, address as `0x${string}`],
-                    value: parseEther(ethLiquidity || '0'),
-                })
-                await publicClient?.waitForTransactionReceipt({ hash: initHash })
-
-                /* notify backend */
-                await fetch('/api/tokens', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ txHash: initHash }),
-                })
-
-                alert('Token & pool created ✅')
-                resetForm()
-            } catch (err) {
-                console.error(err)
-                alert((err as Error).message)
-            }
-        })()
-    }, [tokenAddr, poolAddr])                       // runs exactly once
-
     /* ───────────────────── submit handler ─────────────────────── */
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -129,9 +84,9 @@ export default function CreateTokenForm() {
                 abi: FactoryAbi,
                 functionName: 'createToken',
                 args: [name, symbol, metadata],
-                value: BigInt(0xsn),
+                value: parseEther(ethLiquidity),
             })
-            setHash(txHash)                             // triggers wait hook
+            setHash(txHash);                              // triggers wait hook
         } catch (err) {
             console.error(err)
             alert((err as Error).message)
