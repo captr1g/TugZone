@@ -11,12 +11,9 @@ import {
 } from 'wagmi'
 import { parseEventLogs, parseEther } from 'viem'
 import FactoryAbi from '@/abis/TokenFactory.json'
-import TokenAbi from '@/abis/PumpToken.json'
-import PoolAbi from '@/abis/PumpPool.json'
+
 
 const FACTORY = '0xEbCbB6FFA5cfeE323ddD57Cf05e13391aFaF24F1' as const
-// const PUMPPOOL = '0x28Fe0b07410d9Aee3A94B4C72fBDaBdF15dea416' as const
-// const PUMPTOKEN = '0x6a656A0C6E7B0845a53B2c350e838828daf64DBe' as const
 
 export default function CreateTokenForm() {
     /* ────────────────────────── ui state ───────────────────────── */
@@ -33,23 +30,7 @@ export default function CreateTokenForm() {
     /* ───────────────── wagmi / viem hooks ──────────────────────── */
     const { address, isConnected } = useAccount()
     const { writeContractAsync } = useWriteContract()
-    const publicClient = usePublicClient()
-    const { data: walletClient } = useWalletClient()          // signer-like
 
-    /* 1️⃣ watch all future TokenCreated events (optional) */
-    useWatchContractEvent({
-        address: FACTORY,
-        abi: FactoryAbi,
-        eventName: 'TokenCreated',
-        onLogs: (logs) => {
-            const [{ args }] = parseEventLogs({
-                abi: FactoryAbi,
-                logs,
-                eventName: 'TokenCreated',
-            })
-            console.log('🔔 live event → new token at', args[0])
-        },
-    })
 
     /* 2️⃣ wait for factory tx to be mined */
     const { data: receipt } = useWaitForTransactionReceipt({
@@ -61,15 +42,21 @@ export default function CreateTokenForm() {
     /* 3️⃣ once we have a receipt → decode factory logs */
     useEffect(() => {
         if (!receipt) return
-        const decoded = parseEventLogs({ abi: FactoryAbi, logs: receipt.logs })
 
-        const tokenLog = decoded.find((l) => l.eventName === 'TokenCreated')
-        const poolLog = decoded.find((l) => l.eventName === 'PoolCreated')
+        const events = parseEventLogs({ abi: FactoryAbi, logs: receipt.logs })
 
-        if (tokenLog && poolLog) {
-            setTokenAddr(tokenLog.args[0] as `0x${string}`)
-            setPoolAddr(poolLog.args[1] as `0x${string}`)
+        for (const ev of events) {
+            if (ev.eventName === 'TokenCreated') {
+                const { tokenAddress } = ev.args as { tokenAddress: `0x${string}` }
+                setTokenAddr(tokenAddress)
+            }
+            if (ev.eventName === 'PoolCreated') {
+                const { poolAddress } = ev.args as { poolAddress: `0x${string}` }
+                setPoolAddr(poolAddress)
+            }
         }
+
+        setLoading(false)
     }, [receipt])
 
     /* ───────────────────── submit handler ─────────────────────── */
@@ -101,18 +88,41 @@ export default function CreateTokenForm() {
 
     /* ────────────────────────── ui ────────────────────────────── */
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-sm">
-            <input className="input input-bordered" placeholder="Token Name"
-                value={name} onChange={e => setName(e.target.value)} required />
-            <input className="input input-bordered" placeholder="Symbol"
-                value={symbol} onChange={e => setSymbol(e.target.value)} required />
-            <input className="input input-bordered" placeholder="Metadata URL"
-                value={metadata} onChange={e => setMetadata(e.target.value)} required />
-            <input className="input input-bordered" placeholder="ETH Liquidity (e.g. 0.01)"
-                value={ethLiquidity} onChange={e => setLiquidity(e.target.value)} required />
-            <button className="btn btn-primary" disabled={loading || !isConnected}>
-                {loading ? 'Creating…' : 'Create Token'}
-            </button>
-        </form>
+        <>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-sm">
+                <input className="input input-bordered" placeholder="Token Name"
+                    value={name} onChange={e => setName(e.target.value)} required />
+                <input className="input input-bordered" placeholder="Symbol"
+                    value={symbol} onChange={e => setSymbol(e.target.value)} required />
+                <input className="input input-bordered" placeholder="Metadata URL"
+                    value={metadata} onChange={e => setMetadata(e.target.value)} required />
+                <input className="input input-bordered" placeholder="ETH Liquidity (e.g. 0.01)"
+                    value={ethLiquidity} onChange={e => setLiquidity(e.target.value)} required />
+                <button className="btn btn-primary" disabled={loading || !isConnected}>
+                    {loading ? 'Creating…' : 'Create Token'}
+                </button>
+            </form>
+            {tokenAddr && (
+                <div className="alert alert-success text-sm break-all">
+                    Token deployed&nbsp;→&nbsp;
+                    <a
+                        href={`https://base-sepolia.blockscout.com/address/${tokenAddr}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="link"
+                    >
+                        {tokenAddr}
+                    </a>
+                    <br />
+                    Pool&nbsp;→&nbsp;
+                    <a
+                        href={`https://base-sepolia.blockscout.com/address/${poolAddr}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="link"
+                    >
+                        {poolAddr}
+                    </a>
+                </div>
+            )}
+        </>
     )
 }
