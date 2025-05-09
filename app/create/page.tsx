@@ -4,10 +4,7 @@ import { useState, useEffect } from 'react'
 import {
     useAccount,
     useWriteContract,
-    usePublicClient,
     useWaitForTransactionReceipt,
-    useWatchContractEvent,
-    useWalletClient,
 } from 'wagmi'
 import { parseEventLogs, parseEther } from 'viem'
 import FactoryAbi from '@/abis/TokenFactory.json'
@@ -56,7 +53,9 @@ export default function CreateTokenForm() {
             }
         }
 
-        setLoading(false)
+        setLoading(false);
+        console.log(tokenAddr);
+        console.log(poolAddr);
     }, [receipt])
 
     /* ───────────────────── submit handler ─────────────────────── */
@@ -74,6 +73,18 @@ export default function CreateTokenForm() {
                 value: parseEther(ethLiquidity),
             })
             setHash(txHash);                              // triggers wait hook
+
+            console.log('calling backend');
+            const response = await fetch('/api/tokens/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ txHash }),
+            });
+            const backendData = await response.json();
+            console.log(backendData);
+
         } catch (err) {
             console.error(err)
             alert((err as Error).message)
@@ -83,46 +94,117 @@ export default function CreateTokenForm() {
 
     function resetForm() {
         setName(''); setSymbol(''); setMetadata(''); setLiquidity('')
-        setLoading(false); setHash(undefined); setTokenAddr(undefined); setPoolAddr(undefined)
+        setLoading(false); setHash(undefined);
     }
 
     /* ────────────────────────── ui ────────────────────────────── */
     return (
-        <>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-sm">
-                <input className="input input-bordered" placeholder="Token Name"
-                    value={name} onChange={e => setName(e.target.value)} required />
-                <input className="input input-bordered" placeholder="Symbol"
-                    value={symbol} onChange={e => setSymbol(e.target.value)} required />
-                <input className="input input-bordered" placeholder="Metadata URL"
-                    value={metadata} onChange={e => setMetadata(e.target.value)} required />
-                <input className="input input-bordered" placeholder="ETH Liquidity (e.g. 0.01)"
-                    value={ethLiquidity} onChange={e => setLiquidity(e.target.value)} required />
-                <button className="btn btn-primary" disabled={loading || !isConnected}>
-                    {loading ? 'Creating…' : 'Create Token'}
-                </button>
-            </form>
+        <main className="flex flex-col items-center p-6 space-y-6">
+
+            {/* ───── create-token form ───── */}
+            <div className="card w-full max-w-md shadow-xl bg-base-200">
+                <div className="card-body space-y-4">
+                    <h2 className="card-title">Launch a new mem-token</h2>
+
+                    <form onSubmit={handleSubmit} className="space-y-3">
+
+                        <label className="form-control w-full">
+                            <span className="label-text">Token name</span>
+                            <input
+                                className="input input-bordered w-full"
+                                value={name}
+                                onChange={e => setName(e.target.value)}
+                                placeholder="e.g. Assesino Cappuccino"
+                                required
+                            />
+                        </label>
+
+                        <label className="form-control w-full">
+                            <span className="label-text">Symbol</span>
+                            <input
+                                className="input input-bordered w-full"
+                                value={symbol}
+                                onChange={e => setSymbol(e.target.value)}
+                                placeholder="e.g. ASH"
+                                required
+                            />
+                        </label>
+
+                        <label className="form-control w-full">
+                            <span className="label-text">Metadata URL</span>
+                            <input
+                                className="input input-bordered w-full"
+                                value={metadata}
+                                onChange={e => setMetadata(e.target.value)}
+                                placeholder="ipfs://… or https://…"
+                                required
+                            />
+                        </label>
+
+                        <label className="form-control w-full">
+                            <span className="label-text">Initial ETH liquidity</span>
+                            <input
+                                className="input input-bordered w-full"
+                                value={ethLiquidity}
+                                onChange={e => setLiquidity(e.target.value)}
+                                placeholder="0.01"
+                                required
+                            />
+                            <span className="label-text-alt">min 0.001 ETH</span>
+                        </label>
+
+                        <button
+                            className="btn btn-primary w-full"
+                            disabled={loading || !isConnected}
+                        >
+                            {loading ? (
+                                <span className="loading loading-spinner loading-sm mr-2" />
+                            ) : null}
+                            {loading ? 'Creating…' : 'Create token'}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {/* ───── results card ───── */}
             {tokenAddr && (
-                <div className="alert alert-success text-sm break-all">
-                    Token deployed&nbsp;→&nbsp;
-                    <a
-                        href={`https://base-sepolia.blockscout.com/address/${tokenAddr}`}
-                        target="_blank" rel="noopener noreferrer"
-                        className="link"
-                    >
-                        {tokenAddr}
-                    </a>
-                    <br />
-                    Pool&nbsp;→&nbsp;
-                    <a
-                        href={`https://base-sepolia.blockscout.com/address/${poolAddr}`}
-                        target="_blank" rel="noopener noreferrer"
-                        className="link"
-                    >
-                        {poolAddr}
-                    </a>
+                <div className="card w-full max-w-md shadow-lg border">
+                    <div className="card-body space-y-2">
+                        <h2 className="card-title">🎉 Token launched!</h2>
+
+                        <div className="grid grid-cols-[120px_1fr] gap-x-2 text-sm">
+                            <span className="font-medium">Token</span>
+                            <a
+                                href={`https://base-sepolia.blockscout.com/address/${tokenAddr}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="link break-all"
+                            >
+                                {tokenAddr}
+                            </a>
+
+                            <span className="font-medium">Pool</span>
+                            <a
+                                href={`https://base-sepolia.blockscout.com/address/${poolAddr}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="link break-all"
+                            >
+                                {poolAddr}
+                            </a>
+                        </div>
+
+                        <div className="card-actions justify-end pt-3">
+                            <button
+                                onClick={resetForm}
+                                className="btn btn-outline btn-sm"
+                            >
+                                New token
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
-        </>
+        </main>
     )
-}
+}  

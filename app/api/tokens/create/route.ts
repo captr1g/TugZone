@@ -12,11 +12,11 @@ const FACTORY = process.env.NEXT_PUBLIC_FACTORY!;
 const RPC_URL = process.env.RPC_URL!;
 
 export async function POST(req: Request) {
+    console.log("called...");
     const session = await (await connectToDatabase()).startSession();
     session.startTransaction();
 
     try {
-
         const { txHash } = await req.json();
         if (!txHash) return failure('Tx hash is required', 400);
 
