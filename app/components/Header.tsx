@@ -3,13 +3,13 @@
 import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { ConnectKitButton } from "connectkit";
+// import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { Wallet } from '@coinbase/onchainkit/wallet';
 
 export default function Header() {
   // const { address } = useAccount();
-  const { connect, connectors, isPending } = useConnect();
-  const { disconnect } = useDisconnect();
+  // const { connect, connectors, isPending } = useConnect();
+  // const { disconnect } = useDisconnect();
 
   // // pick the first available connector (MetaMask/injected, WalletConnect, etc.)
   // const handleClick = () => {
@@ -52,7 +52,7 @@ export default function Header() {
               ? `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`
               : "Connect Wallet"}
           </Button> */}
-          <ConnectKitButton />
+          <Wallet />
         </div>
       </div>
     </header>

@@ -39,13 +39,21 @@ const dummyLeaders = [
 ]
 
 /* ––––– helpers ––––– */
-function timeLeft(end: string) {
+function timeRemaining(end: string) {
   const diff = new Date(end).getTime() - Date.now()
   if (diff <= 0) return 'Ended'
+
   const m = Math.floor(diff / 6e4)
-  const h = Math.floor(m / 60)
+  const d = Math.floor(m / 1440)
+  const h = Math.floor((m % 1440) / 60)
   const mm = m % 60
-  return `${h}h ${mm}m`
+  return [
+    d ? `${d}d` : null,
+    h ? `${h}h` : null,
+    `${mm}m`
+  ]
+    .filter(Boolean)
+    .join(' ')
 }
 
 export default function WarDetailPage() {
@@ -166,11 +174,11 @@ export default function WarDetailPage() {
           <div className="flex justify-between items-center text-sm">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-primary" />
-              <span>{war.timeRemaining} remaining</span>
+              <span>{timeRemaining(war.endTime)} remaining</span>
             </div>
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
-              <span>{war.participants} participants</span>
+              <span>{war.totalParticipants} participants</span>
             </div>
             <div>
               <span className="font-bold">Total Volume: </span>

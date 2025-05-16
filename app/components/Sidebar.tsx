@@ -13,10 +13,11 @@ const navItems = [
 ]
 
 export default function Sidebar() {
+  console.log("heyy")
   const pathname = usePathname()
 
   return (
-    <aside className="hidden border-r border-border/50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 lg:block lg:w-72 shadow-lg z-20">
+    <aside className="border-r border-border/50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 lg:block lg:w-72 shadow-lg z-20">
       <div className="flex h-full flex-col cyber-gradient">
         <div className="flex h-16 items-center border-b border-border/50 px-6">
           <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
