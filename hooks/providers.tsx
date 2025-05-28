@@ -1,16 +1,20 @@
-'use client';
+"use client"
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import type { ReactNode } from 'react';
-import { OnchainKitProvider } from '@coinbase/onchainkit';
-import { base, baseSepolia } from 'wagmi/chains'; // add baseSepolia for testing 
+import { PrivyProvider } from '@privy-io/react-auth';
+import { WagmiProvider, createConfig } from '@privy-io/wagmi';
 
-export function Providers(props: { children: ReactNode }) {
+import { privyConfig } from '../config/privyConfig';
+import { wagmiConfig } from '../config/wagmiConfig';
+
+const queryClient = new QueryClient();
+
+export default function Providers({ children }: { children: React.ReactNode }) {
     return (
-        <OnchainKitProvider
-            apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
-            chain={baseSepolia} // add baseSepolia for testing 
-        >
-            {props.children}
-        </OnchainKitProvider>
+        <PrivyProvider appId="cmb7yk0on018ckw0md27j3q42" config={privyConfig}>
+            <QueryClientProvider client={queryClient}>
+                <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>
+            </QueryClientProvider>
+        </PrivyProvider>
     );
 }

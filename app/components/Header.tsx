@@ -4,22 +4,34 @@ import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 // import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { Wallet } from '@coinbase/onchainkit/wallet';
+// import { Wallet } from '@coinbase/onchainkit/wallet';
+// import { usePrivy, LoginButton } from '@privy-io/react-auth'
+
+import { useLogin, usePrivy } from '@privy-io/react-auth';
+import { useConnectWallet, useWallets } from '@privy-io/react-auth';
+
+function LoginButton() {
+  const { ready, authenticated } = usePrivy();
+  const { login } = useLogin();
+  // Disable login when Privy is not ready or the user is already authenticated
+  const disableLogin = !ready || (ready && authenticated);
+
+  return (
+    <button
+      disabled={disableLogin}
+      onClick={() => login({
+        loginMethods: ['wallet'],
+        walletChainType: 'ethereum-and-solana',
+        disableSignup: false
+      })}
+    >
+      Log in
+    </button>
+  );
+}
+
 
 export default function Header() {
-  // const { address } = useAccount();
-  // const { connect, connectors, isPending } = useConnect();
-  // const { disconnect } = useDisconnect();
-
-  // // pick the first available connector (MetaMask/injected, WalletConnect, etc.)
-  // const handleClick = () => {
-  //   if (address) {
-  //     disconnect();                         // already connected → let user disconnect
-  //   } else {
-  //     connect({ connector: connectors[0] }); // not connected → open wallet
-  //   }
-  // };
-
   return (
     <header className="border-b border-border/50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-md z-10">
       <div className="flex h-16 items-center px-6 cyber-gradient">
@@ -42,17 +54,7 @@ export default function Header() {
             </span>
           </Button>
 
-          {/* <Button
-            variant="outline"
-            className="border-primary/20 hover:border-primary/40"
-            disabled={isPending}
-            onClick={handleClick}
-          >
-            {address
-              ? `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`
-              : "Connect Wallet"}
-          </Button> */}
-          <Wallet />
+          <LoginButton />
         </div>
       </div>
     </header>

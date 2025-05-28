@@ -4,7 +4,7 @@ import { Press_Start_2P } from "next/font/google"
 import "./globals.css"
 import Header from "./components/Header"
 import Sidebar from "./components/Sidebar"
-import { Providers } from "@/hooks/providers"
+import Providers from "@/hooks/providers"
 import '@coinbase/onchainkit/styles.css';
 
 const pressStart2P = Press_Start_2P({
