@@ -1,10 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Users, Clock, ArrowUpRight, Zap } from 'lucide-react'
 import Link from 'next/link'
+
+/* -------------------------------------------------------------------------- */
+/*  Types                                                                     */
+/* -------------------------------------------------------------------------- */
 
 type War = {
   _id: string
@@ -17,52 +26,67 @@ type War = {
   totalVolume: number
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Helpers                                                                   */
+/* -------------------------------------------------------------------------- */
+
+const fmtCountdown = (endISO: string) => {
+  const diff = new Date(endISO).getTime() - Date.now()
+  if (diff <= 0) return 'Ended'
+  const d = Math.floor(diff / 86_400_000)
+  const h = Math.floor((diff % 86_400_000) / 3_600_000)
+  const m = Math.floor((diff % 3_600_000) / 60_000)
+
+  return [d && `${d}d`, h && `${h}h`, `${m}m`].filter(Boolean).join(' ')
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Component                                                                 */
+/* -------------------------------------------------------------------------- */
+
 export default function WarsPage() {
   const [wars, setWars] = useState<War[]>([])
   const [loading, setLoading] = useState(true)
 
-  /* grab wars once on mount */
+  /* fetch wars once on mount */
   useEffect(() => {
     ; (async () => {
       try {
         const res = await fetch('/api/wars')
+        if (!res.ok) throw new Error('Failed to load wars')
         const json = await res.json()
-        setWars(json.data as War[])
+        setWars(Array.isArray(json.data) ? (json.data as War[]) : [])
       } catch (err) {
         console.error(err)
+        setWars([])
       } finally {
         setLoading(false)
       }
     })()
   }, [])
 
-  /* helper: format “Xd Xh Xm” */
-  function timeRemaining(end: string) {
-    const diff = new Date(end).getTime() - Date.now()
-    if (diff <= 0) return 'Ended'
+  /* put ended wars last */
+  const orderedWars = useMemo(() => {
+    const now = Date.now()
+    return [...wars].sort(
+      (a, b) =>
+        Number(new Date(a.endTime).getTime() <= now) -
+        Number(new Date(b.endTime).getTime() <= now),
+    )
+  }, [wars])
 
-    const m = Math.floor(diff / 6e4)
-    const d = Math.floor(m / 1440)
-    const h = Math.floor((m % 1440) / 60)
-    const mm = m % 60
-    return [
-      d ? `${d}d` : null,
-      h ? `${h}h` : null,
-      `${mm}m`
-    ]
-      .filter(Boolean)
-      .join(' ')
-  }
-
+  /* ---------------------------------------------------------------------- */
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-8">
+      {/* header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-primary glow-text">
           Active Token Wars
         </h1>
-        <Link href="/create">
-          <Button className="cyber-button">
-            <Zap className="mr-2 h-4 w-4" />
+
+        <Link href="/create" prefetch>
+          <Button className="cyber-button gap-2">
+            <Zap className="h-4 w-4" />
             Create New Token
           </Button>
         </Link>
@@ -70,60 +94,83 @@ export default function WarsPage() {
 
       {/* grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-
         {loading && (
-          <div className="col-span-full text-muted-foreground">Loading wars…</div>
+          <p className="col-span-full text-muted-foreground">Loading wars…</p>
         )}
 
-        {!loading && wars.length === 0 && (
-          <div className="col-span-full text-muted-foreground">
+        {!loading && orderedWars.length === 0 && (
+          <p className="col-span-full text-muted-foreground">
             No active wars yet – be the first to start one!
-          </div>
+          </p>
         )}
 
-        {wars.map((war) => (
-          <Card key={war._id} className="cyber-gradient border-primary/20">
-            <CardHeader>
-              <CardTitle className="text-primary text-xl glow-text">
-                {war.name || `${war.tokenA.symbol} vs ${war.tokenB.symbol}`}
-              </CardTitle>
-            </CardHeader>
+        {orderedWars.map(war => {
+          const isEnded = Date.now() > new Date(war.endTime).getTime()
 
-            <CardContent>
-              {war.description && (
-                <p className="text-muted-foreground mb-4">{war.description}</p>
-              )}
+          return (
+            <Card
+              key={war._id}
+              className="cyber-gradient border-primary/20 rounded-2xl p-6 shadow-md flex flex-col justify-between min-h-[18rem]"
+            >
+              {/* ——— Title ——— */}
+              <CardHeader className="p-0 mb-4">
+                <CardTitle className="text-2xl font-extrabold text-primary tracking-tight glow-text leading-tight">
+                  {war.name || `${war.tokenA.symbol} vs ${war.tokenB.symbol}`}
+                </CardTitle>
 
-              <div className="flex justify-between items-center text-sm mb-4">
-                <div className="flex items-center">
-                  <Users className="mr-2 h-4 w-4" />
-                  <span>{war.totalParticipants} participants</span>
-                </div>
+                {war.description && (
+                  <p className="text-muted-foreground text-sm mt-1">
+                    {war.description}
+                  </p>
+                )}
+              </CardHeader>
 
-                <div className="flex items-center">
-                  <Clock className="mr-2 h-4 w-4" />
-                  <span>{timeRemaining(war.endTime)} left</span>
-                </div>
-              </div>
+              {/* ——— Metrics ——— */}
+              <CardContent className="p-0 space-y-5 flex-1">
+                {/* participants + countdown */}
+                <div className="flex flex-col gap-3 text-sm">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Users className="w-4 h-4 shrink-0" />
+                    <span className="whitespace-nowrap">
+                      {war.totalParticipants.toLocaleString()} participants
+                    </span>
+                  </div>
 
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="text-sm text-muted-foreground">Total Volume</div>
-                  <div className="font-bold text-primary">
-                    ${war.totalVolume.toLocaleString()}
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Clock className="w-4 h-4 shrink-0" />
+                    <span
+                      className={`whitespace-nowrap ${isEnded ? 'text-destructive' : ''
+                        }`}
+                    >
+                      {fmtCountdown(war.endTime)}
+                    </span>
                   </div>
                 </div>
 
-                <Link href={`/wars/${war._id}`}>
-                  <Button variant="outline" className="cyber-button">
-                    Enter Battle
-                    <ArrowUpRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                {/* volume */}
+                <div className="border border-primary/10 rounded-lg p-4 bg-background/60">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
+                    Total Volume
+                  </p>
+                  <p className="text-xl font-bold text-primary glow-text">
+                    ${war.totalVolume.toLocaleString()}
+                  </p>
+                </div>
+              </CardContent>
+
+              {/* ——— CTA ——— */}
+              <Link href={`/wars/${war._id}`} prefetch className="mt-6 block">
+                <Button
+                  className="w-full cyber-button gap-1 h-10 text-sm tracking-wider"
+                  variant="outline"
+                >
+                  Enter Battle
+                  <ArrowUpRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </Card>
+          )
+        })}
       </div>
     </div>
   )

@@ -4,11 +4,10 @@ import { useParams } from 'next/navigation'
 import { usePublicClient } from 'wagmi'            // viem under the hood
 import { formatEther } from 'viem'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { Zap, Users, Clock, ArrowUp, ArrowDown, TrendingUp, TrendingDown } from "lucide-react"
+import { Users, Clock, TrendingUp, TrendingDown } from "lucide-react"
 import TokenChart from "@/app/components/TokenChart"
 import BuySellActions from "./components/BuySellActions"
 import Leaderboard from "./components/Leaderboard"
