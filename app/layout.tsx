@@ -5,7 +5,6 @@ import "./globals.css"
 import Header from "./components/Header"
 import Sidebar from "./components/Sidebar"
 import Providers from "@/hooks/providers"
-import '@coinbase/onchainkit/styles.css';
 
 const pressStart2P = Press_Start_2P({
   weight: "400",
@@ -30,9 +29,7 @@ export default function RootLayout({
       <body className="min-h-screen">
         <Providers>
           <div className="flex min-h-screen">
-
             <Sidebar />
-
             <div className="flex flex-col flex-1">
               <Header />
               <main className="flex-1 p-6">{children}</main>
