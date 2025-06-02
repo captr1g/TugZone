@@ -3,32 +3,91 @@
 import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-// import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
 // import { Wallet } from '@coinbase/onchainkit/wallet';
 // import { usePrivy, LoginButton } from '@privy-io/react-auth'
 
-import { useLogin, usePrivy } from '@privy-io/react-auth';
-import { useConnectWallet, useWallets } from '@privy-io/react-auth';
+import { useEffect } from "react";
+import {
+  usePrivy,
+  useLogin,
+  useLogout,
+  useConnectWallet,
+  useWallets
+} from '@privy-io/react-auth';
+
 
 function LoginButton() {
-  const { ready, authenticated } = usePrivy();
+  const { ready, authenticated, user } = usePrivy();
+  // const { address } = useAccount()
   const { login } = useLogin();
-  // Disable login when Privy is not ready or the user is already authenticated
-  const disableLogin = !ready || (ready && authenticated);
+  const { logout } = useLogout();
+  const { connectWallet } = useConnectWallet();
+  const { wallets } = useWallets();   // live array of connected wallets
 
+
+  const { disconnect } = useDisconnect();
+
+  useEffect(() => {
+    if (authenticated && wallets.length === 0) {
+      disconnect();
+      logout();
+    }
+  }, [wallets, authenticated, logout]);
+
+
+  const handleClick = async () => {
+    if (!ready) return;
+
+    if (authenticated) {
+      // Already logged in → disconnect + logout
+      // grab first wallet id; adjust if you support several
+      const walletId = wallets[0]?.address;
+      if (walletId) disconnect();
+      await logout();
+    } else {
+      //  Not logged in → connect wallet then login
+      connectWallet();
+      login({
+        loginMethods: ['wallet'],
+        walletChainType: 'ethereum-only',
+        disableSignup: false
+      });
+      console.log('Logged in as', user?.wallet?.address);
+    }
+  };
+
+
+  const connectedAddr = user?.wallet?.address;
   return (
     <button
-      disabled={disableLogin}
-      onClick={() => login({
-        loginMethods: ['wallet'],
-        walletChainType: 'ethereum-and-solana',
-        disableSignup: false
-      })}
+      disabled={!ready}
+      onClick={handleClick}
     >
-      Log in
+      {authenticated && connectedAddr
+        ? `${connectedAddr.slice(0, 4)}…${connectedAddr.slice(-2)}` // e.g. 0xAb…Cd
+        : 'Log in'}
     </button>
   );
 }
+
+
+// return (
+//   <button
+//     disabled={disableLogin}
+//     onClick={loginOnClick}
+//   >
+//     {authenticated ? (
+//       <p>
+//         {user?.wallet?.address
+//           ? `${user.wallet.address.slice(0, 4)}...${user.wallet.address.slice(-2)}`
+//           : ""}
+//       </p>
+//     ) : "Log in"}
+//   </button>
+// );
+
+
 
 
 export default function Header() {
