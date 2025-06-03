@@ -40,9 +40,6 @@ const fmtCountdown = (endISO: string) => {
   return [d && `${d}d`, h && `${h}h`, `${m}m`].filter(Boolean).join(' ')
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Component                                                                 */
-/* -------------------------------------------------------------------------- */
 
 export default function WarsPage() {
   const [wars, setWars] = useState<War[]>([])
@@ -75,7 +72,7 @@ export default function WarsPage() {
     )
   }, [wars])
 
-  /* ---------------------------------------------------------------------- */
+
   return (
     <div className="space-y-8">
       {/* header */}
@@ -92,7 +89,7 @@ export default function WarsPage() {
         </Link>
       </div>
 
-      {/* grid */}
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {loading && (
           <p className="col-span-full text-muted-foreground">Loading wars…</p>
@@ -147,7 +144,7 @@ export default function WarsPage() {
                   </div>
                 </div>
 
-                {/* volume */}
+
                 <div className="border border-primary/10 rounded-lg p-4 bg-background/60">
                   <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
                     Total Volume
@@ -158,7 +155,7 @@ export default function WarsPage() {
                 </div>
               </CardContent>
 
-              {/* ——— CTA ——— */}
+
               <Link href={`/wars/${war._id}`} prefetch className="mt-6 block">
                 <Button
                   className="w-full cyber-button gap-1 h-10 text-sm tracking-wider"
