@@ -1,47 +1,142 @@
+'use client'
+import { useState, useEffect } from "react"
+import { useParams } from 'next/navigation'
+import { usePublicClient } from 'wagmi'            // viem under the hood
+import { formatEther } from 'viem'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { Zap, Users, Clock, ArrowUp, ArrowDown, TrendingUp, TrendingDown } from "lucide-react"
+import { Users, Clock, TrendingUp, TrendingDown } from "lucide-react"
 import TokenChart from "@/app/components/TokenChart"
 import BuySellActions from "./components/BuySellActions"
 import Leaderboard from "./components/Leaderboard"
 
-// Dummy data for a specific war
-const warData = {
-  id: 1,
-  name: "ETH vs BTC",
-  description: "The clash of the titans",
-  status: "active",
-  timeRemaining: "2h 15m",
-  participants: 1243,
-  totalVolume: 1500000,
-  progress: 65,
-  tokenA: {
-    name: "Ethereum",
-    symbol: "ETH",
-    price: 2150.75,
-    change: 5.2,
-  },
-  tokenB: {
-    name: "Bitcoin",
-    symbol: "BTC",
-    price: 36750.5,
-    change: -2.1,
-  },
+type War = {
+  _id: string
+  name: string
+  description: string
+  tokenA: { name: string; symbol: string; tokenAddress: `0x${string}` }
+  tokenB: { name: string; symbol: string; tokenAddress: `0x${string}` }
+  endTime: string
+  startTime: string
+  totalParticipants: number
+  totalVolume: number
 }
 
-export default function WarPage({ params }: { params: { id: string } }) {
-  // In a real application, you would fetch the war details based on the ID
-  const war = warData
+const dummyHistory = [
+  { t: '0h', a: 0.12, b: 0.15 },
+  { t: '1h', a: 0.18, b: 0.14 },
+  { t: '2h', a: 0.21, b: 0.17 },
+  { t: '3h', a: 0.25, b: 0.19 },
+]
+
+const dummyLeaders = [
+  { wallet: '0xF5…D3', size: 2.5 },
+  { wallet: '0x9A…4C', size: 1.1 },
+  { wallet: '0x12…EE', size: 0.8 },
+]
+
+/* ––––– helpers ––––– */
+function timeRemaining(end: string) {
+  const diff = new Date(end).getTime() - Date.now()
+  if (diff <= 0) return 'Ended'
+
+  const m = Math.floor(diff / 6e4)
+  const d = Math.floor(m / 1440)
+  const h = Math.floor((m % 1440) / 60)
+  const mm = m % 60
+  return [
+    d ? `${d}d` : null,
+    h ? `${h}h` : null,
+    `${mm}m`
+  ]
+    .filter(Boolean)
+    .join(' ')
+}
+
+export default function WarDetailPage() {
+
+  const { id } = useParams() as { id: string }
+
+  const [war, setWar] = useState<War | null>(null)
+  const [priceA, setPriceA] = useState<number | null>(null)
+  const [priceB, setPriceB] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const client = usePublicClient()
+  /* ───── fetch war details ───── */
+  useEffect(() => {
+    ; (async () => {
+      try {
+        const res = await fetch(`/api/wars/${id}`)
+        const json = await res.json()
+        setWar(json.data as War)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    })()
+  }, [id])
+
+  /* ───── fetch on-chain prices each 15 s ───── */
+  useEffect(() => {
+    if (!war) return
+
+    const fetchPrice = async () => {
+      try {
+        const readReserves = async (tokenAddr: `0x${string}`) => {
+          // 1. look up pool for token in your DB API
+          const poolRes = await fetch(`/api/pools?token=${tokenAddr}`)
+          const { poolAddress } = await poolRes.json()
+
+          // 2. read reserves (token + ETH) – adjust ABI name if needed
+          const [tokenRes, ethRes] = await client.readContract({
+            address: poolAddress,
+            abi: [{
+              name: 'getReserves', type: 'function', stateMutability: 'view', outputs: [
+                { name: 'tokenReserves', type: 'uint256' },
+                { name: 'ethReserves', type: 'uint256' }]
+            }],
+            functionName: 'getReserves',
+          }) as [bigint, bigint]
+
+          // 3. price = ethReserves / tokenReserves
+          return Number(formatEther(ethRes)) / (Number(tokenRes) / 1e18)
+        }
+
+        const [pA, pB] = await Promise.all([
+          readReserves(war.tokenA.tokenAddress),
+          readReserves(war.tokenB.tokenAddress),
+        ])
+        setPriceA(pA)
+        setPriceB(pB)
+      } catch (e) {
+        console.error('price fetch failed', e)
+      }
+    }
+
+    fetchPrice()
+    const id = setInterval(fetchPrice, 15_000)
+    return () => clearInterval(id)
+  }, [war, client])
+
+  /* ───── render ───── */
+  if (loading) {
+    return <div className="p-6 text-muted-foreground">Loading…</div>
+  }
+  if (!war) {
+    return <div className="p-6 text-destructive">War not found.</div>
+  }
+
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-primary glow-text">{war.name}</h1>
-          <p className="text-lg text-muted-foreground">{war.description}</p>
+          <p className="text-lg text-muted-foreground">{war.tokenA.name} vs {war.tokenB.name}</p>
         </div>
         <Badge variant="outline" className="text-lg uppercase cyber-gradient">
           {war.status}
@@ -64,7 +159,7 @@ export default function WarPage({ params }: { params: { id: string } }) {
                     {Math.abs(token.change)}%
                   </span>
                 </div>
-                <div className="text-2xl font-semibold">${token.price.toLocaleString()}</div>
+                <div className="text-2xl font-semibold">100</div>
               </div>
             ))}
           </div>
@@ -78,11 +173,11 @@ export default function WarPage({ params }: { params: { id: string } }) {
           <div className="flex justify-between items-center text-sm">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-primary" />
-              <span>{war.timeRemaining} remaining</span>
+              <span>{timeRemaining(war.endTime)} remaining</span>
             </div>
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
-              <span>{war.participants} participants</span>
+              <span>{war.totalParticipants} participants</span>
             </div>
             <div>
               <span className="font-bold">Total Volume: </span>

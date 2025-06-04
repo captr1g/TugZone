@@ -6,7 +6,7 @@ import { success, failure } from '@/utils/response';
 export async function GET() {
     try {
         await connectToDatabase();
-
+        console.log('Connected to database');
         const wars = await War.find({ isActive: true }).sort({ startTime: -1 });
 
         return success(wars);

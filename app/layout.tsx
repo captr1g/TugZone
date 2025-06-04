@@ -4,8 +4,7 @@ import { Press_Start_2P } from "next/font/google"
 import "./globals.css"
 import Header from "./components/Header"
 import Sidebar from "./components/Sidebar"
-// import { WalletProvider } from "@/hooks/walletContext"
-import { Web3Provider } from "@/hooks/Web3Provider"
+import Providers from "@/hooks/providers"
 
 const pressStart2P = Press_Start_2P({
   weight: "400",
@@ -28,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.className} ${pressStart2P.variable}`}>
       <body className="min-h-screen">
-        <Web3Provider>
+        <Providers>
           <div className="flex min-h-screen">
             <Sidebar />
             <div className="flex flex-col flex-1">
@@ -36,11 +35,9 @@ export default function RootLayout({
               <main className="flex-1 p-6">{children}</main>
             </div>
           </div>
-        </Web3Provider>
+        </Providers>
       </body>
     </html>
   )
 }
 
-
-import './globals.css'

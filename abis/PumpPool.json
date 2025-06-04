@@ -27,6 +27,11 @@
         "type": "error"
     },
     {
+        "inputs": [],
+        "name": "ReentrancyGuardReentrantCall",
+        "type": "error"
+    },
+    {
         "inputs": [
             {
                 "internalType": "address",
@@ -118,6 +123,37 @@
             {
                 "indexed": true,
                 "internalType": "address",
+                "name": "token",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "initialTokenAmount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "initialEthAmount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "initialPrice",
+                "type": "uint256"
+            }
+        ],
+        "name": "PoolInitialized",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
                 "name": "seller",
                 "type": "address"
             },
@@ -163,21 +199,33 @@
         "type": "event"
     },
     {
-        "inputs": [],
-        "name": "FEE_DENOMINATOR",
-        "outputs": [
+        "anonymous": false,
+        "inputs": [
             {
+                "indexed": true,
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
                 "internalType": "uint256",
-                "name": "",
+                "name": "initialBalance",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "startTime",
                 "type": "uint256"
             }
         ],
-        "stateMutability": "view",
-        "type": "function"
+        "name": "VestingInitialized",
+        "type": "event"
     },
     {
         "inputs": [],
-        "name": "FEE_PERCENTAGE",
+        "name": "DAILY_UNLOCK_PERCENTAGE",
         "outputs": [
             {
                 "internalType": "uint256",
@@ -216,11 +264,43 @@
     },
     {
         "inputs": [],
-        "name": "buyTokens",
+        "name": "VESTING_PERIOD",
         "outputs": [
             {
                 "internalType": "uint256",
                 "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "blockTransactionCount",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "buyTokens",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenAmount",
                 "type": "uint256"
             }
         ],
@@ -239,35 +319,11 @@
         "outputs": [
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "tokenAmount",
                 "type": "uint256"
             }
         ],
         "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "ethAmount",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "totalSupply",
-                "type": "uint256"
-            }
-        ],
-        "name": "calculateInitialTokenAmount",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "pure",
         "type": "function"
     },
     {
@@ -282,7 +338,7 @@
         "outputs": [
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "ethAmount",
                 "type": "uint256"
             }
         ],
@@ -310,13 +366,89 @@
         "type": "function"
     },
     {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            }
+        ],
+        "name": "getMaxSellableAmount",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [],
         "name": "getTokenPrice",
         "outputs": [
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "price",
                 "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            }
+        ],
+        "name": "getUserVestingStatus",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "vestingStartTime",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "initialBalance",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "totalSold",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "maxSellableNow",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "vestingEndsAt",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bool",
+                "name": "isVestingComplete",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "initialPhaseCompleted",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
             }
         ],
         "stateMutability": "view",
@@ -338,6 +470,25 @@
         "name": "initialize",
         "outputs": [],
         "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "lastBlockBought",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -386,7 +537,7 @@
         "outputs": [
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "ethAmount",
                 "type": "uint256"
             }
         ],
@@ -414,19 +565,6 @@
                 "internalType": "bool",
                 "name": "",
                 "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "timeUntilSellingEnabled",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
             }
         ],
         "stateMutability": "view",
@@ -490,14 +628,47 @@
                 "internalType": "address",
                 "name": "",
                 "type": "address"
-            },
+            }
+        ],
+        "name": "userInitialBalance",
+        "outputs": [
             {
                 "internalType": "uint256",
                 "name": "",
                 "type": "uint256"
             }
         ],
-        "name": "txCounter",
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "userTotalSold",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "userVestingStart",
         "outputs": [
             {
                 "internalType": "uint256",

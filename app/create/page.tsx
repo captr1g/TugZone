@@ -11,6 +11,7 @@ import FactoryAbi from '@/abis/TokenFactory.json'
 
 
 const FACTORY = '0xEbCbB6FFA5cfeE323ddD57Cf05e13391aFaF24F1' as const
+const POOL = '0x856f236a946dcd30379579f0bA37253D895d3548' as const
 
 export default function CreateTokenForm() {
     /* ────────────────────────── ui state ───────────────────────── */

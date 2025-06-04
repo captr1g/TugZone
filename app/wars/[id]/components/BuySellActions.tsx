@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Zap } from "lucide-react"
+import POOL_ABI from "../../../../abis/PumpPool.json";
 
 interface Token {
   name: string
@@ -13,9 +14,13 @@ interface Token {
   price: number
 }
 
+const POOL = '0x856f236a946dcd30379579f0bA37253D895d3548' as const
+
 export default function BuySellActions({ tokens }: { tokens: Token[] }) {
   const [selectedToken, setSelectedToken] = useState(tokens[0].symbol)
   const [amount, setAmount] = useState("")
+
+
 
   const handleBuy = () => {
     // Implement buy logic

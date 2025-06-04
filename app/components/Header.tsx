@@ -4,22 +4,93 @@ import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { ConnectKitButton } from "connectkit";
+// import { Wallet } from '@coinbase/onchainkit/wallet';
+// import { usePrivy, LoginButton } from '@privy-io/react-auth'
 
-export default function Header() {
-  // const { address } = useAccount();
-  const { connect, connectors, isPending } = useConnect();
+import { useEffect } from "react";
+import {
+  usePrivy,
+  useLogin,
+  useLogout,
+  useConnectWallet,
+  useWallets
+} from '@privy-io/react-auth';
+
+
+function LoginButton() {
+  const { ready, authenticated, user } = usePrivy();
+  // const { address } = useAccount()
+  const { login } = useLogin();
+  const { logout } = useLogout();
+  const { connectWallet } = useConnectWallet();
+  const { wallets } = useWallets();   // live array of connected wallets
+
+
   const { disconnect } = useDisconnect();
 
-  // // pick the first available connector (MetaMask/injected, WalletConnect, etc.)
-  // const handleClick = () => {
-  //   if (address) {
-  //     disconnect();                         // already connected → let user disconnect
-  //   } else {
-  //     connect({ connector: connectors[0] }); // not connected → open wallet
-  //   }
-  // };
+  useEffect(() => {
+    if (authenticated && wallets.length === 0) {
+      disconnect();
+      logout();
+    }
+  }, [wallets, authenticated, logout]);
 
+
+  const handleClick = async () => {
+    if (!ready) return;
+
+    if (authenticated) {
+      // Already logged in → disconnect + logout
+      // grab first wallet id; adjust if you support several
+      const walletId = wallets[0]?.address;
+      if (walletId) disconnect();
+      await logout();
+    } else {
+      //  Not logged in → connect wallet then login
+      connectWallet();
+      login({
+        loginMethods: ['wallet'],
+        walletChainType: 'ethereum-only',
+        disableSignup: false
+      });
+      console.log('Logged in as', user?.wallet?.address);
+    }
+  };
+
+
+  const connectedAddr = user?.wallet?.address;
+  return (
+    <button
+      disabled={!ready}
+      onClick={handleClick}
+    >
+      {authenticated && connectedAddr
+        ? `${connectedAddr.slice(0, 4)}…${connectedAddr.slice(-2)}` // e.g. 0xAb…Cd
+        : 'Log in'}
+    </button>
+  );
+}
+
+
+// return (
+//   <button
+//     disabled={disableLogin}
+//     onClick={loginOnClick}
+//   >
+//     {authenticated ? (
+//       <p>
+//         {user?.wallet?.address
+//           ? `${user.wallet.address.slice(0, 4)}...${user.wallet.address.slice(-2)}`
+//           : ""}
+//       </p>
+//     ) : "Log in"}
+//   </button>
+// );
+
+
+
+
+export default function Header() {
   return (
     <header className="border-b border-border/50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-md z-10">
       <div className="flex h-16 items-center px-6 cyber-gradient">
@@ -42,17 +113,7 @@ export default function Header() {
             </span>
           </Button>
 
-          {/* <Button
-            variant="outline"
-            className="border-primary/20 hover:border-primary/40"
-            disabled={isPending}
-            onClick={handleClick}
-          >
-            {address
-              ? `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`
-              : "Connect Wallet"}
-          </Button> */}
-          <ConnectKitButton />
+          <LoginButton />
         </div>
       </div>
     </header>
